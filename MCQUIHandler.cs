@@ -6,42 +6,43 @@ public class MCQUIHandler : MonoBehaviour
     public MCQManager manager;
 
     public TextMeshProUGUI questionText;
+    public TextMeshProUGUI feedbackText;
     public TextMeshProUGUI scoreText;
-    public MCQOptionButton[] optionButtons;
+
+    public MCQOptionButton[] options;
 
     void OnEnable()
     {
         manager.OnQuestionLoaded += DisplayQuestion;
-        manager.OnAnswerResult += ShowResult;
-        manager.OnQuizCompleted += ShowFinalScore;
+        manager.OnAnswerFeedback += ShowFeedback;
     }
 
     void OnDisable()
     {
         manager.OnQuestionLoaded -= DisplayQuestion;
-        manager.OnAnswerResult -= ShowResult;
-        manager.OnQuizCompleted -= ShowFinalScore;
+        manager.OnAnswerFeedback -= ShowFeedback;
     }
 
     void DisplayQuestion(MCQQuestion q)
     {
+        feedbackText.text = "";
+
         questionText.text = q.question;
 
-        for (int i = 0; i < optionButtons.Length; i++)
-        {
-            optionButtons[i].Setup(q.options[i], i, manager);
-        }
+        for (int i = 0; i < options.Length; i++)
+            options[i].Setup(q.options[i], i, manager);
     }
 
-    void ShowResult(bool isCorrect, int score)
+    void ShowFeedback(bool correct,
+                      int correctIndex,
+                      int score,
+                      string feedback)
     {
-        scoreText.text = "Score: " + score;
+        scoreText.text = "Score : " + score;
 
-        Debug.Log(isCorrect ? "Correct!" : "Wrong!");
-    }
-
-    void ShowFinalScore(int finalScore)
-    {
-        Debug.Log("Quiz Completed! Final Score: " + finalScore);
+        feedbackText.text =
+            feedback +
+            "\n\nCorrect Answer: " +
+            options[correctIndex].GetText();
     }
 }
