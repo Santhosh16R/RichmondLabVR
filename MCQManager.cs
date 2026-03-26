@@ -1,52 +1,176 @@
 using UnityEngine;
 using System;
+using System.Collections;
 
 public class MCQManager : MonoBehaviour
 {
+    [Header("Questions")]
     public MCQQuestion[] questions;
 
-    private int currentQuestionIndex = 0;
+    [Header("Audio")]
+    public MCQAudioManager audioManager;
 
-    public int TotalScore { get; private set; } = 0;
+    // -----------------------------
+    // Runtime Data
+    // -----------------------------
+    int currentQuestionIndex = 0;
 
+    public int TotalScore { get; private set; }
+
+    public bool IsQuizRunning { get; private set; }
+
+    // -----------------------------
+    // Events (UI / VR / SCORM)
+    // -----------------------------
     public Action<MCQQuestion> OnQuestionLoaded;
-    public Action<bool, int> OnAnswerResult; // (isCorrect, currentScore)
-    public Action<int> OnQuizCompleted; // final score
 
+    // bool isCorrect
+    // int correctIndex
+    // int totalScore
+    // string feedbackText
+    public Action<bool, int, int, string> OnAnswerFeedback;
+
+    public Action<int> OnQuizCompleted;
+
+    // -------------------------------------------------
+    // START QUIZ
+    // -------------------------------------------------
     public void StartQuiz()
     {
-        currentQuestionIndex = 0;
+        if (questions == null || questions.Length == 0)
+        {
+            Debug.LogError("No MCQ Questions Assigned!");
+            return;
+        }
+
         TotalScore = 0;
+        currentQuestionIndex = 0;
+        IsQuizRunning = true;
+
         LoadQuestion();
     }
 
+    // -------------------------------------------------
+    // LOAD QUESTION
+    // -------------------------------------------------
     void LoadQuestion()
     {
-        if (currentQuestionIndex < questions.Length)
+        if (currentQuestionIndex >= questions.Length)
         {
-            OnQuestionLoaded?.Invoke(questions[currentQuestionIndex]);
+            FinishQuiz();
+            return;
         }
-        else
-        {
-            OnQuizCompleted?.Invoke(TotalScore);
-        }
+
+        MCQQuestion q = questions[currentQuestionIndex];
+
+        OnQuestionLoaded?.Invoke(q);
+
+        // Play question narration
+        if (audioManager != null)
+            audioManager.Play(q.questionAudio);
     }
 
+    // -------------------------------------------------
+    // SUBMIT ANSWER
+    // -------------------------------------------------
     public void SubmitAnswer(int selectedIndex)
     {
-        var current = questions[currentQuestionIndex];
+        if (!IsQuizRunning) return;
 
-        bool isCorrect = selectedIndex == current.correctAnswerIndex;
+        StartCoroutine(HandleAnswer(selectedIndex));
+    }
 
+    // -------------------------------------------------
+    // ANSWER PROCESS FLOW
+    // -------------------------------------------------
+    IEnumerator HandleAnswer(int selectedIndex)
+    {
+        MCQQuestion q = questions[currentQuestionIndex];
+
+        bool isCorrect = selectedIndex == q.correctAnswerIndex;
+
+        // Add Score
         if (isCorrect)
+            TotalScore += q.marks;
+
+        // Choose feedback text
+        string feedbackText =
+            isCorrect ? q.correctFeedbackText
+                      : q.wrongFeedbackText;
+
+        // Notify UI / VR system
+        OnAnswerFeedback?.Invoke(
+            isCorrect,
+            q.correctAnswerIndex,
+            TotalScore,
+            feedbackText
+        );
+
+        // Play feedback voice
+        if (audioManager != null)
         {
-            TotalScore += current.marks;
+            if (isCorrect)
+                audioManager.Play(q.correctFeedbackAudio);
+            else
+                audioManager.Play(q.wrongFeedbackAudio);
         }
 
-        OnAnswerResult?.Invoke(isCorrect, TotalScore);
+        // Wait for voice to finish
+        if (audioManager != null)
+        {
+            while (audioManager.IsPlaying())
+                yield return null;
+        }
+
+        // Small delay before next question
+        yield return new WaitForSeconds(1f);
 
         currentQuestionIndex++;
 
-        Invoke(nameof(LoadQuestion), 1.5f);
+        LoadQuestion();
+    }
+
+    // -------------------------------------------------
+    // QUIZ FINISH
+    // -------------------------------------------------
+    void FinishQuiz()
+    {
+        IsQuizRunning = false;
+
+        Debug.Log("Quiz Completed. Final Score: " + TotalScore);
+
+        OnQuizCompleted?.Invoke(TotalScore);
+    }
+
+    // -------------------------------------------------
+    // HELPERS
+    // -------------------------------------------------
+
+    public int GetCurrentQuestionNumber()
+    {
+        return currentQuestionIndex + 1;
+    }
+
+    public int GetTotalQuestions()
+    {
+        return questions.Length;
+    }
+
+    public float GetPercentage()
+    {
+        int maxScore = 0;
+
+        foreach (var q in questions)
+            maxScore += q.marks;
+
+        if (maxScore == 0) return 0;
+
+        return (float)TotalScore / maxScore * 100f;
+    }
+
+    public void StopQuiz()
+    {
+        StopAllCoroutines();
+        IsQuizRunning = false;
     }
 }
