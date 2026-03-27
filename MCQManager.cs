@@ -10,41 +10,46 @@ public class MCQManager : MonoBehaviour
     [Header("Audio")]
     public MCQAudioManager audioManager;
 
-    // -----------------------------
-    // Runtime Data
-    // -----------------------------
     int currentQuestionIndex = 0;
 
     public int TotalScore { get; private set; }
-
     public bool IsQuizRunning { get; private set; }
 
-    // -----------------------------
-    // Events (UI / VR / SCORM)
-    // -----------------------------
+    bool waitingForNext = false;
+
+    // ---------------- EVENTS ----------------
+
     public Action<MCQQuestion> OnQuestionLoaded;
 
-    // bool isCorrect
-    // int correctIndex
-    // int totalScore
-    // string feedbackText
     public Action<bool, int, int, string> OnAnswerFeedback;
 
     public Action<int> OnQuizCompleted;
+
+    // ---------------- REPORT ----------------
+
+    float quizStartTime;
+    float questionStartTime;
+
+    MCQReportData report = new MCQReportData();
 
     // -------------------------------------------------
     // START QUIZ
     // -------------------------------------------------
     public void StartQuiz()
     {
-        if (questions == null || questions.Length == 0)
+        if (questions.Length == 0)
         {
-            Debug.LogError("No MCQ Questions Assigned!");
+            Debug.LogError("No Questions Assigned!");
             return;
         }
 
         TotalScore = 0;
         currentQuestionIndex = 0;
+
+        report = new MCQReportData();
+
+        quizStartTime = Time.time;
+
         IsQuizRunning = true;
 
         LoadQuestion();
@@ -55,6 +60,8 @@ public class MCQManager : MonoBehaviour
     // -------------------------------------------------
     void LoadQuestion()
     {
+        waitingForNext = false;
+
         if (currentQuestionIndex >= questions.Length)
         {
             FinishQuiz();
@@ -63,9 +70,10 @@ public class MCQManager : MonoBehaviour
 
         MCQQuestion q = questions[currentQuestionIndex];
 
+        questionStartTime = Time.time;
+
         OnQuestionLoaded?.Invoke(q);
 
-        // Play question narration
         if (audioManager != null)
             audioManager.Play(q.questionAudio);
     }
@@ -75,13 +83,14 @@ public class MCQManager : MonoBehaviour
     // -------------------------------------------------
     public void SubmitAnswer(int selectedIndex)
     {
-        if (!IsQuizRunning) return;
+        if (!IsQuizRunning || waitingForNext)
+            return;
 
         StartCoroutine(HandleAnswer(selectedIndex));
     }
 
     // -------------------------------------------------
-    // ANSWER PROCESS FLOW
+    // HANDLE ANSWER
     // -------------------------------------------------
     IEnumerator HandleAnswer(int selectedIndex)
     {
@@ -89,16 +98,23 @@ public class MCQManager : MonoBehaviour
 
         bool isCorrect = selectedIndex == q.correctAnswerIndex;
 
-        // Add Score
         if (isCorrect)
             TotalScore += q.marks;
 
-        // Choose feedback text
+        float timeTaken = Time.time - questionStartTime;
+
+        // Save report data
+        QuestionReport qr = new QuestionReport();
+        qr.questionText = q.question;
+        qr.isCorrect = isCorrect;
+        qr.timeTaken = timeTaken;
+
+        report.questionReports.Add(qr);
+
         string feedbackText =
             isCorrect ? q.correctFeedbackText
                       : q.wrongFeedbackText;
 
-        // Notify UI / VR system
         OnAnswerFeedback?.Invoke(
             isCorrect,
             q.correctAnswerIndex,
@@ -106,7 +122,7 @@ public class MCQManager : MonoBehaviour
             feedbackText
         );
 
-        // Play feedback voice
+        // Play feedback audio
         if (audioManager != null)
         {
             if (isCorrect)
@@ -115,15 +131,24 @@ public class MCQManager : MonoBehaviour
                 audioManager.Play(q.wrongFeedbackAudio);
         }
 
-        // Wait for voice to finish
+        // Wait for audio finish
         if (audioManager != null)
         {
             while (audioManager.IsPlaying())
                 yield return null;
         }
 
-        // Small delay before next question
-        yield return new WaitForSeconds(1f);
+        // NOW WAIT FOR BUTTON CLICK
+        waitingForNext = true;
+    }
+
+    // -------------------------------------------------
+    // NEXT QUESTION BUTTON
+    // -------------------------------------------------
+    public void NextQuestion()
+    {
+        if (!waitingForNext)
+            return;
 
         currentQuestionIndex++;
 
@@ -131,31 +156,24 @@ public class MCQManager : MonoBehaviour
     }
 
     // -------------------------------------------------
-    // QUIZ FINISH
+    // FINISH QUIZ
     // -------------------------------------------------
     void FinishQuiz()
     {
         IsQuizRunning = false;
 
-        Debug.Log("Quiz Completed. Final Score: " + TotalScore);
+        report.totalScore = TotalScore;
+        report.totalTime = Time.time - quizStartTime;
+        report.percentage = GetPercentage();
 
         OnQuizCompleted?.Invoke(TotalScore);
+
+        Debug.Log("Quiz Completed");
     }
 
     // -------------------------------------------------
     // HELPERS
     // -------------------------------------------------
-
-    public int GetCurrentQuestionNumber()
-    {
-        return currentQuestionIndex + 1;
-    }
-
-    public int GetTotalQuestions()
-    {
-        return questions.Length;
-    }
-
     public float GetPercentage()
     {
         int maxScore = 0;
@@ -168,9 +186,8 @@ public class MCQManager : MonoBehaviour
         return (float)TotalScore / maxScore * 100f;
     }
 
-    public void StopQuiz()
+    public MCQReportData GetReport()
     {
-        StopAllCoroutines();
-        IsQuizRunning = false;
+        return report;
     }
 }
