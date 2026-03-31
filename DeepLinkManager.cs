@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class DeepLinkManager : MonoBehaviour
 {
@@ -12,25 +13,23 @@ public class DeepLinkManager : MonoBehaviour
 
     void OnDeepLink(string url)
     {
-        Debug.Log("Deep Link Received: " + url);
+        Debug.Log("DeepLink: " + url);
 
         string token = GetToken(url);
 
-        LaunchCourse(token);
+        Authenticate(token);
     }
 
     string GetToken(string url)
     {
-        var uri = new System.Uri(url);
-        var query = uri.Query;
-
-        return query.Replace("?token=", "");
+        System.Uri uri = new System.Uri(url);
+        return uri.Query.Replace("?token=","");
     }
 
-    void LaunchCourse(string token)
+    void Authenticate(string token)
     {
-        Debug.Log("Launching course with token: " + token);
+        Debug.Log("Authenticated: " + token);
 
-        // Start VR training scene here
+        SceneManager.LoadScene("TrainingScene");
     }
 }
