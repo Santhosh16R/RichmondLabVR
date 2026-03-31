@@ -5,6 +5,8 @@ public class DeepLinkManager : MonoBehaviour
 {
     void Awake()
     {
+        DontDestroyOnLoad(gameObject);
+
         Application.deepLinkActivated += OnDeepLink;
 
         if (!string.IsNullOrEmpty(Application.absoluteURL))
@@ -13,23 +15,11 @@ public class DeepLinkManager : MonoBehaviour
 
     void OnDeepLink(string url)
     {
-        Debug.Log("DeepLink: " + url);
+        Debug.Log("DeepLink Received: " + url);
 
-        string token = GetToken(url);
-
-        Authenticate(token);
-    }
-
-    string GetToken(string url)
-    {
-        System.Uri uri = new System.Uri(url);
-        return uri.Query.Replace("?token=","");
-    }
-
-    void Authenticate(string token)
-    {
-        Debug.Log("Authenticated: " + token);
-
-        SceneManager.LoadScene("TrainingScene");
+        if (url.StartsWith("richmondlab://launch"))
+        {
+            SceneManager.LoadScene(1); // Training Scene
+        }
     }
 }
