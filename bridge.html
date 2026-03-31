@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>VR Bridge</title>
+<script src="scorm.js"></script>
+</head>
+
+<body>
+
+<h2>VR Session Running...</h2>
+
+<script>
+
+ScormInitialize();
+
+/* Receive analytics from Unity */
+window.addEventListener("message", function(e)
+{
+    console.log("Unity Data:", e.data);
+
+    if(e.data.type === "progress")
+    {
+        ScormSetValue(
+            "cmi.core.lesson_location",
+            e.data.step
+        );
+        ScormCommit();
+    }
+
+    if(e.data.type === "score")
+    {
+        ScormSetValue(
+            "cmi.core.score.raw",
+            e.data.score
+        );
+        ScormCommit();
+    }
+
+    if(e.data.type === "complete")
+    {
+        ScormComplete();
+    }
+});
+
+</script>
+
+<iframe src="index.html"
+width="100%"
+height="600"
+style="border:none;">
+</iframe>
+
+</body>
+</html>
