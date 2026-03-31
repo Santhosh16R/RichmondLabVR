@@ -1,45 +1,50 @@
 <!DOCTYPE html>
 <html>
 <head>
-
-<title>VR Course Launch</title>
-
 <script src="qrcode.min.js"></script>
-<script src="scorm.js"></script>
 
-<link rel="stylesheet" href="style.css">
+<style>
+body{
+    text-align:center;
+    background:white;
+    font-family:Arial;
+}
+
+#qrcode{
+    margin-top:60px;
+}
+</style>
 
 </head>
 
 <body>
 
-<h2>Scan Using Quest Headset</h2>
+<h2>Scan with Quest</h2>
 
 <div id="qrcode"></div>
 
-<p>Open your VR App and scan the QR</p>
-
 <script>
 
-// Start SCORM
-ScormInitialize();
+/* SHORT TOKEN */
+const token =
+Math.random().toString(36).substring(2,8);
 
-// Get learner info from LMS
-const learnerId = ScormGetValue("cmi.core.student_id");
-const learnerName = ScormGetValue("cmi.core.student_name");
+/* DEEP LINK */
+const deeplink =
+"richmondlab://" + token;
 
-// Create session token
-const token = btoa(learnerId + "|" + Date.now());
+/* QUEST OPTIMIZED QR */
+new QRCode(document.getElementById("qrcode"),{
 
-// Deep link to Quest app
-const deepLink =
-"myvrapp://launch?token=" + token;
+    text: deeplink,
 
-// Generate QR Code
-new QRCode(document.getElementById("qrcode"), {
-    text: deepLink,
-    width: 300,
-    height: 300
+    width: 420,
+    height: 420,
+
+    colorDark : "#000000",
+    colorLight : "#ffffff",
+
+    correctLevel : QRCode.CorrectLevel.L
 });
 
 </script>
