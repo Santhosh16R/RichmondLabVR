@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>VR Training Report</title>
+
+<script>
+
+// --------------------
+// FIND SCORM API
+// --------------------
+
+var scormAPI = null;
+
+function findAPI(win)
+{
+    var attempts = 0;
+
+    while (win && attempts < 10)
+    {
+        if (win.API) return win.API;       // SCORM 1.2
+        if (win.API_1484_11) return win.API_1484_11; // SCORM 2004
+
+        win = win.parent;
+        attempts++;
+    }
+
+    return null;
+}
+
+
+// --------------------
+// INITIALIZE SCORM
+// --------------------
+
+function ScormInitialize()
+{
+    scormAPI = findAPI(window);
+
+    if (!scormAPI)
+    {
+        console.log("SCORM API not found");
+        return;
+    }
+
+    if (scormAPI.LMSInitialize)
+        scormAPI.LMSInitialize("");
+    else
+        scormAPI.Initialize("");
+}
+
+
+// --------------------
+// SET VALUE
+// --------------------
+
+function ScormSetValue(name, value)
+{
+    if (!scormAPI) return;
+
+    if (scormAPI.LMSSetValue)
+        scormAPI.LMSSetValue(name, value);
+    else
+        scormAPI.SetValue(name, value);
+}
+
+
+// --------------------
+// COMPLETE LESSON
+// --------------------
+
+function ScormComplete()
+{
+    if (!scormAPI) return;
+
+    if (scormAPI.LMSCommit)
+        scormAPI.LMSCommit("");
+    else
+        scormAPI.Commit("");
+
+    if (scormAPI.LMSFinish)
+        scormAPI.LMSFinish("");
+    else
+        scormAPI.Terminate("");
+}
+
+
+// --------------------
+// SEND REPORT TO LMS
+// --------------------
+
+function sendReport()
+{
+    ScormInitialize();
+
+    const params = new URLSearchParams(window.location.search);
+
+    const status = params.get("status") || "completed";
+    const score  = params.get("score")  || "100";
+    const time   = params.get("time")   || "PT5M";
+
+    // SCORM 1.2 values
+    ScormSetValue("cmi.core.lesson_status", status);
+    ScormSetValue("cmi.core.score.raw", score);
+    ScormSetValue("cmi.core.session_time", time);
+
+    // SCORM 2004 values (optional but safe)
+    ScormSetValue("cmi.completion_status", status);
+    ScormSetValue("cmi.score.raw", score);
+
+    ScormComplete();
+
+    document.body.innerHTML =
+        "<h2>✅ Training Completed Successfully</h2>" +
+        "<p>You may now close this window.</p>";
+}
+
+</script>
+
+</head>
+
+<body onload="sendReport()">
+
+<h2>Sending Training Analytics...</h2>
+
+</body>
+</html>
