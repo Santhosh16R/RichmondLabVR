@@ -1,19 +1,15 @@
 using UnityEngine;
 using ZXing;
 using System.Collections;
-using UnityEngine.XR.OpenXR;
-using UnityEngine.XR.OpenXR.Features.Meta;
 
-public class MetaOpenXRQRScanner : MonoBehaviour
+public class MetaQuestQRScanner : MonoBehaviour
 {
-    private BarcodeReader reader;
-    private bool scanning = false;
-
-    Texture2D cameraTexture;
+    WebCamTexture camTexture;
+    BarcodeReader reader;
+    bool scanning = false;
 
     IEnumerator Start()
     {
-        // Request camera permission
         yield return Application.RequestUserAuthorization(
             UserAuthorization.WebCam);
 
@@ -29,46 +25,35 @@ public class MetaOpenXRQRScanner : MonoBehaviour
             TryInverted = true
         };
 
+        WebCamDevice[] devices = WebCamTexture.devices;
+
+        foreach (var d in devices)
+            Debug.Log("Camera Found: " + d.name);
+
+        // Quest RGB camera
+        camTexture = new WebCamTexture(devices[0].name, 1280, 720, 30);
+        camTexture.Play();
+
         scanning = true;
 
-        Debug.Log("QR Scanner Started");
+        InvokeRepeating(nameof(ScanQR), 2f, 0.3f);
     }
 
-    void Update()
+    void ScanQR()
     {
-        if (!scanning)
+        if (!scanning || camTexture.width < 100)
             return;
-
-        TryScanQR();
-    }
-
-    void TryScanQR()
-    {
-        // Get latest Meta camera frame
-        if (!MetaOpenXRCamera.TryGetLatestFrame(out var frame))
-            return;
-
-        int width = frame.width;
-        int height = frame.height;
-
-        if (cameraTexture == null)
-            cameraTexture = new Texture2D(width, height, TextureFormat.RGBA32, false);
-
-        cameraTexture.LoadRawTextureData(frame.pixelData);
-        cameraTexture.Apply();
 
         var result = reader.Decode(
-            cameraTexture.GetPixels32(),
-            width,
-            height
-        );
+            camTexture.GetPixels32(),
+            camTexture.width,
+            camTexture.height);
 
         if (result != null)
         {
             scanning = false;
 
             Debug.Log("✅ QR DETECTED: " + result.Text);
-
             OnQRDetected(result.Text);
         }
     }
@@ -76,10 +61,5 @@ public class MetaOpenXRQRScanner : MonoBehaviour
     void OnQRDetected(string data)
     {
         Debug.Log("QR DATA: " + data);
-
-        // Example usage
-        // SceneManager.LoadScene(data);
-        // SendToServer(data);
-        // SpawnMRContent(data);
     }
 }
