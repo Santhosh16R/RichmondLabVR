@@ -1,0 +1,286 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>VR Training Launcher (SCORM 2004)</title>
+
+<script src="scorm2004driver.js"></script>
+
+<style>
+body{
+    font-family: Arial, Helvetica, sans-serif;
+    padding:20px;
+    max-width:700px;
+}
+#code{
+    font-size:36px;
+    font-weight:700;
+    color:#0a5;
+    margin:12px 0;
+}
+#status{ margin-top:16px;color:#555;}
+.hidden{ display:none;}
+#finishButton{
+    margin-top:20px;
+    padding:10px 20px;
+    font-size:16px;
+    cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<h1>VR Training</h1>
+
+<p>
+This page creates a one-time launch code.
+Enter the code inside the Quest VR application.
+</p>
+
+<strong>Launch Code:</strong>
+<div id="code">Generating...</div>
+
+<div id="status">Initializing...</div>
+
+<button id="finishButton" class="hidden" onclick="finishCourse()">
+Finish Course
+</button>
+
+<script>
+
+/* =========================================================
+   SAME ORIGIN PROXY (CORS FIX)
+========================================================= */
+
+const REMOTE_API =
+"https://0f0f92d6e21c.ngrok-free.app";
+
+/* all requests go through proxy.php */
+async function apiFetch(path, options={}) {
+
+    const response = await fetch("proxy.php",{
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body:JSON.stringify({
+            url: REMOTE_API + path,
+            method: options.method || "GET",
+            body: options.body || null
+        })
+    });
+
+    return response;
+}
+
+/* =========================================================
+   SCORM WRAPPER
+========================================================= */
+
+const scorm =
+(typeof pipwerks !== "undefined" && pipwerks.SCORM)
+? pipwerks.SCORM : null;
+
+function logStatus(msg){
+    document.getElementById("status").textContent = msg;
+}
+
+function showCode(code){
+    document.getElementById("code").textContent = code;
+}
+
+/* =========================================================
+   INIT SCORM + CREATE SESSION
+========================================================= */
+
+async function scormInitAndCreateSession(){
+
+try{
+
+    if(scorm){
+        scorm.init();
+        logStatus("SCORM initialized");
+    }else{
+        logStatus("SCORM API not found (test mode)");
+    }
+
+    const learnerId   = scorm ? scorm.get("cmi.learner_id") : null;
+    const learnerName = scorm ? scorm.get("cmi.learner_name") : null;
+    const courseId    = scorm ? scorm.get("cmi.course_id") : null;
+
+    logStatus("Creating launch code...");
+
+    const resp = await apiFetch("/create-session",{
+        method:"POST",
+        body:JSON.stringify({
+            learnerId,
+            learnerName,
+            courseId
+        })
+    });
+
+    const data = await resp.json();
+
+    const code = data.code;
+
+    showCode(code);
+
+    if(scorm){
+        scorm.set(
+            "cmi.suspend_data",
+            JSON.stringify({launchCode:code})
+        );
+        scorm.save();
+    }
+
+    logStatus("Enter code in VR headset...");
+
+    pollForScore(code,5000);
+
+}catch(err){
+
+    console.error(err);
+    logStatus("Error: "+err.message);
+    showCode("ERROR");
+
+}
+}
+
+/* =========================================================
+   POLLING FOR VR RESULT
+========================================================= */
+
+let pollTimer=null;
+
+function pollForScore(code,interval){
+
+if(pollTimer) clearInterval(pollTimer);
+
+pollTimer=setInterval(async()=>{
+
+try{
+
+    const response =
+        await apiFetch(
+            `/check-score?code=${encodeURIComponent(code)}`
+        );
+
+    if(!response.ok) return;
+
+    const body = await response.json();
+
+    if(body.submitted){
+
+        clearInterval(pollTimer);
+
+        logStatus("Result received from VR");
+
+        writeScoreToScorm(body,code);
+    }
+
+}catch(e){
+    console.log("Polling error",e);
+}
+
+},interval);
+}
+
+/* =========================================================
+   WRITE SCORE TO SCORM
+========================================================= */
+
+function writeScoreToScorm(resultObj,code){
+
+if(!scorm){
+    logStatus("No SCORM API");
+    return;
+}
+
+try{
+
+    console.log("Writing score",resultObj);
+
+    /* SCORE */
+    scorm.set("cmi.score.raw",String(resultObj.score || 0));
+    scorm.set("cmi.score.min","0");
+    scorm.set("cmi.score.max","100");
+
+    /* STATUS */
+    if(resultObj.completion)
+        scorm.set("cmi.completion_status",
+            resultObj.completion);
+
+    if(resultObj.success)
+        scorm.set("cmi.success_status",
+            resultObj.success);
+
+    if(resultObj.progress)
+        scorm.set("cmi.progress_measure",
+            String(resultObj.progress));
+
+    scorm.set(
+        "cmi.suspend_data",
+        JSON.stringify({
+            launchCode:code,
+            submittedAt:new Date().toISOString(),
+            details:resultObj.details||null
+        })
+    );
+
+    scorm.save();
+
+    if(resultObj.allTasksCompleted){
+        document
+        .getElementById("finishButton")
+        .classList.remove("hidden");
+    }
+
+    logStatus(
+        "Score saved. Click Finish."
+    );
+
+}catch(e){
+
+    console.error(e);
+    logStatus("SCORM write failed");
+
+}
+}
+
+/* =========================================================
+   FINISH COURSE
+========================================================= */
+
+function finishCourse(){
+
+if(!scorm){
+    alert("SCORM not available");
+    return;
+}
+
+scorm.set("cmi.completion_status","completed");
+scorm.save();
+scorm.quit();
+
+alert("Course Finished!");
+
+}
+
+/* =========================================================
+   SAFE UNLOAD
+========================================================= */
+
+window.addEventListener("beforeunload",()=>{
+    try{
+        if(scorm) scorm.quit();
+    }catch(e){}
+});
+
+/* =========================================================
+   START
+========================================================= */
+
+scormInitAndCreateSession();
+
+</script>
+</body>
+</html>
