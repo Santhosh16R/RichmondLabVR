@@ -1,68 +1,108 @@
 <!DOCTYPE html>
 <html>
 <head>
+
+<meta charset="UTF-8">
+<title>Richmond Lab VR Launcher</title>
+
 <script src="qrcode.min.js"></script>
 <script src="scorm.js"></script>
 
 <style>
 body{
     text-align:center;
-    background:white;
-    font-family:Arial;
+    background:#ffffff;
+    font-family:Arial, Helvetica, sans-serif;
 }
+
+h2{
+    margin-top:40px;
+}
+
 #qrcode{
     margin-top:60px;
 }
 </style>
+
 </head>
 
 <body>
 
-<h2>Scan with Quest</h2>
+<h2>Scan QR using Quest Headset</h2>
 
 <div id="qrcode"></div>
 
 <script>
 
-// --------------------
-// INIT SCORM
-// --------------------
-ScormInitialize();
+// ======================================================
+// SAFE SCORM INITIALIZATION
+// ======================================================
 
-// Store learner info
-const learner =
-ScormGetValue("cmi.core.student_id");
+let learnerID = "guest";
 
-// Create session token
+try
+{
+    ScormInitialize();
+
+    const id = ScormGetValue("cmi.core.student_id");
+
+    if(id && id !== "")
+        learnerID = id;
+
+    console.log("SCORM User:", learnerID);
+}
+catch(e)
+{
+    console.log("SCORM API not found (local testing)");
+}
+
+
+// ======================================================
+// CREATE SESSION TOKEN
+// ======================================================
+
 const token =
 Math.random().toString(36).substring(2,8);
 
-// Save token in SCORM attempt
-ScormSetValue("cmi.core.lesson_location", token);
-ScormCommit();
 
-// --------------------
-// CREATE DEEPLINK
-// --------------------
+// Save token for resume tracking (only if SCORM exists)
+try
+{
+    ScormSetValue("cmi.core.lesson_location", token);
+    ScormCommit();
+}
+catch(e){}
+
+
+// ======================================================
+// CREATE QUEST DEEPLINK
+// ======================================================
+
 const deeplink =
-"richmondlab://launch?token=" +
-token +
-"&user=" +
-learner;
+"richmondlab://launch" +
+"?token=" + token +
+"&user=" + learnerID;
 
-// --------------------
-// GENERATE QR
-// --------------------
+
+// ======================================================
+// GENERATE QUEST OPTIMIZED QR CODE
+// ======================================================
+
 new QRCode(
 document.getElementById("qrcode"),
 {
     text: deeplink,
+
     width: 420,
     height: 420,
+
     colorDark:"#000000",
     colorLight:"#ffffff",
+
     correctLevel:QRCode.CorrectLevel.L
 });
+
+console.log("DEEPLINK:", deeplink);
 
 </script>
 
