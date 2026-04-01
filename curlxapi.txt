@@ -1,20 +1,17 @@
-curl -X POST "https://cloud.scorm.com/lrs/XXXX/xAPI/statements" ^
--H "Content-Type: application/json" ^
--H "X-Experience-API-Version: 1.0.3" ^
--H "Authorization: Basic BASE64_KEY_SECRET" ^
--d "{
-  \"actor\": {
-    \"name\": \"QuestUser\",
-    \"mbox\": \"mailto:user@test.com\"
-  },
-  \"verb\": {
-    \"id\": \"http://adlnet.gov/expapi/verbs/completed\",
-    \"display\": {\"en-US\": \"completed\"}
-  },
-  \"object\": {
-    \"id\": \"http://example.com/vr-training\"
-  },
-  \"result\": {
-    \"score\": {\"raw\": 90}
-  }
-}"
+curl -X POST https://cloud.scorm.com/lrs/8JOOKMHZUE/xAPI/statements \
+-H "Authorization: Basic cHpjczRxOVRuUDE4aFBpSkN3VTpxbGhQekVfaUI2QnN3b0o5aDRN" \
+-H "Content-Type: application/json" \
+-H "X-Experience-API-Version: 1.0.3" \
+-d '{
+"actor":{
+"name":"Quest User",
+"mbox":"mailto:user@test.com"
+},
+"verb":{
+"id":"http://adlnet.gov/expapi/verbs/completed",
+"display":{"en-US":"completed"}
+},
+"object":{
+"id":"http://richmondlab/training"
+}
+}'
