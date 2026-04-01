@@ -2,6 +2,7 @@
 <html>
 <head>
 <script src="qrcode.min.js"></script>
+<script src="scorm.js"></script>
 
 <style>
 body{
@@ -9,12 +10,10 @@ body{
     background:white;
     font-family:Arial;
 }
-
 #qrcode{
     margin-top:60px;
 }
 </style>
-
 </head>
 
 <body>
@@ -25,26 +24,44 @@ body{
 
 <script>
 
-/* SHORT TOKEN */
+// --------------------
+// INIT SCORM
+// --------------------
+ScormInitialize();
+
+// Store learner info
+const learner =
+ScormGetValue("cmi.core.student_id");
+
+// Create session token
 const token =
 Math.random().toString(36).substring(2,8);
 
-/* DEEP LINK */
+// Save token in SCORM attempt
+ScormSetValue("cmi.core.lesson_location", token);
+ScormCommit();
+
+// --------------------
+// CREATE DEEPLINK
+// --------------------
 const deeplink =
-"richmondlab://" + token;
+"richmondlab://launch?token=" +
+token +
+"&user=" +
+learner;
 
-/* QUEST OPTIMIZED QR */
-new QRCode(document.getElementById("qrcode"),{
-
+// --------------------
+// GENERATE QR
+// --------------------
+new QRCode(
+document.getElementById("qrcode"),
+{
     text: deeplink,
-
     width: 420,
     height: 420,
-
-    colorDark : "#000000",
-    colorLight : "#ffffff",
-
-    correctLevel : QRCode.CorrectLevel.L
+    colorDark:"#000000",
+    colorLight:"#ffffff",
+    correctLevel:QRCode.CorrectLevel.L
 });
 
 </script>
