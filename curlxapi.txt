@@ -1,0 +1,6 @@
+curl -X POST \
+https://cloud.scorm.com/lrs/XXXX/xAPI/statements \
+-u KEY:SECRET \
+-H "X-Experience-API-Version: 1.0.3" \
+-H "Content-Type: application/json" \
+-d '{}'
