@@ -1,6 +1,20 @@
-curl -X POST \
-https://cloud.scorm.com/lrs/XXXX/xAPI/statements \
--u KEY:SECRET \
--H "X-Experience-API-Version: 1.0.3" \
--H "Content-Type: application/json" \
--d '{}'
+curl -X POST "https://cloud.scorm.com/lrs/XXXX/xAPI/statements" ^
+-H "Content-Type: application/json" ^
+-H "X-Experience-API-Version: 1.0.3" ^
+-H "Authorization: Basic BASE64_KEY_SECRET" ^
+-d "{
+  \"actor\": {
+    \"name\": \"QuestUser\",
+    \"mbox\": \"mailto:user@test.com\"
+  },
+  \"verb\": {
+    \"id\": \"http://adlnet.gov/expapi/verbs/completed\",
+    \"display\": {\"en-US\": \"completed\"}
+  },
+  \"object\": {
+    \"id\": \"http://example.com/vr-training\"
+  },
+  \"result\": {
+    \"score\": {\"raw\": 90}
+  }
+}"
