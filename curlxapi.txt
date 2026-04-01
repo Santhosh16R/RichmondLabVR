@@ -15,3 +15,11 @@ curl -X POST https://cloud.scorm.com/lrs/8JOOKMHZUE/xAPI/statements \
 "id":"http://richmondlab/training"
 }
 }'
+
+ngrok server -  https://6fce-2405-201-e038-30a3-4c80-3ea9-a6fc-ea79.ngrok-free.app
+
+create session - curl --location 'https://6fce-2405-201-e038-30a3-4c80-3ea9-a6fc-ea79.ngrok-free.app/create-session' \
+--header 'Content-Type: application/json' \
+--data '{
+  "code": "589cdf"
+}'
