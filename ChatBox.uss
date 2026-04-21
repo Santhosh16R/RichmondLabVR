@@ -1,0 +1,322 @@
+/* ================================================
+   ChatBox.uss  –  Unity UI Toolkit Stylesheet
+   Dark theme, modern chat UI
+   ================================================ */
+
+/* ---------- OUTER WRAPPER ---------- */
+/* Prevents the UIDocument from stretching the panel */
+.outer-wrapper {
+    flex-grow: 0;
+    flex-shrink: 0;
+    align-items: flex-start;
+    justify-content: flex-start;
+    width: 420px;
+    height: 620px;
+}
+
+/* ---------- ROOT ---------- */
+.root {
+    flex-direction: column;
+    flex-grow: 0;
+    flex-shrink: 0;
+    width: 420px;
+    height: 620px;
+    min-height: 620px;
+    max-height: 620px;
+    background-color: #0f1117;
+    border-radius: 20px;
+    overflow: hidden;
+    border-width: 1px;
+    border-color: #2a2d3a;
+}
+
+/* ---------- HEADER ---------- */
+.header {
+    flex-direction: row;
+    align-items: center;
+    flex-shrink: 0;
+    padding: 14px 18px;
+    background-color: #16181f;
+    border-bottom-width: 1px;
+    border-bottom-color: #2a2d3a;
+}
+
+.avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 21px;
+    background-color: #5865f2;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+}
+
+.avatar-text {
+    color: #ffffff;
+    font-size: 14px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.header-info {
+    flex-direction: column;
+}
+
+.header-title {
+    color: #e8eaf6;
+    font-size: 15px;
+    -unity-font-style: bold;
+}
+
+.status-row {
+    flex-direction: row;
+    align-items: center;
+    margin-top: 2px;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 4px;
+    background-color: #43b581;
+    margin-right: 5px;
+}
+
+.status-label {
+    color: #72767d;
+    font-size: 11px;
+}
+
+/* ---------- SCROLL / MESSAGES ---------- */
+.chat-scroll {
+    flex-grow: 1;
+    flex-shrink: 1;
+    min-height: 0;
+    background-color: #0f1117;
+    overflow: hidden;
+}
+
+/* ScrollView's inner content viewport */
+.chat-scroll > #unity-content-and-vertical-scroll-container {
+    flex-grow: 1;
+    flex-shrink: 1;
+    min-height: 0;
+}
+
+.chat-scroll > #unity-content-and-vertical-scroll-container > #unity-content-viewport {
+    flex-grow: 1;
+    flex-shrink: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.messages-container {
+    flex-direction: column;
+    flex-grow: 0;
+    flex-shrink: 0;
+    padding: 16px 12px;
+}
+
+/* ---------- MESSAGE BUBBLES (added at runtime) ---------- */
+
+/* User bubble */
+.msg-row-user {
+    flex-direction: row;
+    justify-content: flex-end;
+    margin-bottom: 8px;
+}
+
+.bubble-user {
+    max-width: 72%;
+    background-color: #5865f2;
+    border-radius: 18px;
+    border-bottom-right-radius: 4px;
+    padding: 10px 14px;
+}
+
+.bubble-user .bubble-text {
+    color: #ffffff;
+    font-size: 13px;
+    white-space: normal;
+    -unity-word-wrap: true;
+    overflow: hidden;
+}
+
+/* AI bubble */
+.msg-row-ai {
+    flex-direction: row;
+    justify-content: flex-start;
+    margin-bottom: 8px;
+}
+
+.bubble-ai {
+    max-width: 72%;
+    background-color: #1e2130;
+    border-radius: 18px;
+    border-bottom-left-radius: 4px;
+    padding: 10px 14px;
+    border-width: 1px;
+    border-color: #2a2d3a;
+}
+
+.bubble-ai .bubble-text {
+    color: #c9d1d9;
+    font-size: 13px;
+    white-space: normal;
+    -unity-word-wrap: true;
+    overflow: hidden;
+}
+
+.bubble-timestamp {
+    color: #4a4e69;
+    font-size: 10px;
+    margin-top: 4px;
+    -unity-text-align: middle-right;
+}
+
+/* ---------- TYPING INDICATOR ---------- */
+.typing-indicator {
+    flex-direction: row;
+    align-items: center;
+    flex-shrink: 0;
+    padding: 6px 18px 8px 18px;
+}
+
+.typing-text {
+    color: #72767d;
+    font-size: 11px;
+    margin-right: 6px;
+    -unity-font-style: italic;
+}
+
+.typing-dots {
+    flex-direction: row;
+    align-items: center;
+}
+
+.dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 3px;
+    background-color: #5865f2;
+    margin-right: 3px;
+    opacity: 0.4;
+}
+
+.hidden {
+    display: none;
+}
+
+/* ---------- INPUT ROW ---------- */
+.input-row {
+    flex-direction: row;
+    align-items: center;
+    flex-shrink: 0;
+    flex-grow: 0;
+    overflow: hidden;
+    min-width: 0;
+    padding: 10px 12px;
+    background-color: #16181f;
+    border-top-width: 1px;
+    border-top-color: #2a2d3a;
+}
+
+.chat-input {
+    flex-grow: 1;
+    flex-shrink: 1;
+    min-width: 0;
+    height: 40px;
+    background-color: #1e2130;
+    border-radius: 20px;
+    border-width: 1px;
+    border-color: #2a2d3a;
+    color: #e8eaf6;
+    font-size: 13px;
+    padding: 0 14px;
+    margin-right: 8px;
+    overflow: hidden;
+}
+
+.chat-input:focus {
+    border-color: #5865f2;
+}
+
+/* Remove default TextField inner border + enforce clipping on inner text */
+.chat-input > .unity-text-field__input {
+    background-color: rgba(0,0,0,0);
+    border-width: 0;
+    color: #e8eaf6;
+    padding: 0;
+    overflow: hidden;
+    min-width: 0;
+    flex-shrink: 1;
+    -unity-overflow-clip-box: content-box;
+}
+
+/* ---------- BUTTONS ---------- */
+.mic-button {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+    flex-shrink: 0;
+    border-radius: 20px;
+    background-color: #1e2130;
+    border-width: 1px;
+    border-color: #2a2d3a;
+    padding: 0;
+    margin-right: 6px;
+    align-items: center;
+    justify-content: center;
+    cursor: link;
+    transition-duration: 0.15s;
+    transition-property: background-color, border-color;
+}
+
+.mic-button:hover {
+    background-color: #2a2d3a;
+    border-color: #5865f2;
+}
+
+/* Recording state – toggled via C# */
+.mic-button--recording {
+    background-color: #ed4245;
+    border-color: #ed4245;
+}
+
+.mic-icon {
+    font-size: 16px;
+    -unity-text-align: middle-center;
+}
+
+.send-button {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+    flex-shrink: 0;
+    border-radius: 20px;
+    background-color: #5865f2;
+    border-width: 0;
+    padding: 0;
+    align-items: center;
+    justify-content: center;
+    cursor: link;
+    transition-duration: 0.15s;
+    transition-property: background-color;
+}
+
+.send-button:hover {
+    background-color: #4752c4;
+}
+
+.send-button:disabled {
+    background-color: #2a2d3a;
+    opacity: 0.5;
+}
+
+.send-icon {
+    font-size: 16px;
+    color: #ffffff;
+    -unity-text-align: middle-center;
+}
