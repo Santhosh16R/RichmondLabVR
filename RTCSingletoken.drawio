@@ -1,0 +1,598 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Page-1" id="EU2BcgXi2vLiNA8n0-qT">
+    <mxGraphModel dx="2828" dy="1486" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <UserObject label="" mermaidData="{&#xa;  &quot;data&quot;: &quot;\nsequenceDiagram\n  actor Learner\n  participant LMS as LMS / SCORM Cloud\n  participant Bridge as SCORM Bridge Page&lt;br/&gt;bridge.html\n  participant SCORM as SCORM API&lt;br/&gt;scorm.js\n  participant UnityAuth as Unity Auth API\n  participant CloudCode as Unity Cloud Code\n  participant CloudSave as Unity Cloud Save\n  participant Quest as Meta Quest App\n\n  Learner-&gt;&gt;LMS: Open assigned VR training\n  LMS-&gt;&gt;Bridge: Launch SCORM package&lt;br/&gt;Protocol: HTTPS&lt;br/&gt;Data: bridge.html, JS, CSS, manifest\n\n  Bridge-&gt;&gt;SCORM: Initialize(\&quot;\&quot;)\n  SCORM-&gt;&gt;LMS: Connect to SCORM runtime&lt;br/&gt;Protocol: SCORM 2004 JS API\n\n  Bridge-&gt;&gt;SCORM: GetValue(\&quot;cmi.learner_id\&quot;)&lt;br/&gt;GetValue(\&quot;cmi.learner_name\&quot;)\n  SCORM--&gt;&gt;Bridge: learnerId, learnerName\n\n  Bridge-&gt;&gt;SCORM: Set incomplete state\n  SCORM-&gt;&gt;LMS: SetValue completion_status=incomplete&lt;br/&gt;success_status=unknown&lt;br/&gt;Commit(\&quot;\&quot;)\n\n  Bridge-&gt;&gt;UnityAuth: Token exchange&lt;br/&gt;Protocol: HTTPS REST POST&lt;br/&gt;Auth: Basic credential&lt;br/&gt;Data: projectId, environmentId\n  UnityAuth--&gt;&gt;Bridge: accessToken\n\n  Bridge-&gt;&gt;Bridge: Generate sharedBridgeToken&lt;br/&gt;Data: tokenId / bridgePlayerId\n\n  Bridge-&gt;&gt;CloudCode: CreateSession&lt;br/&gt;Protocol: HTTPS REST POST&lt;br/&gt;Auth: Bearer accessToken&lt;br/&gt;Data: tokenId, bridgePlayerId,&lt;br/&gt;learnerId, learnerName\n\n  CloudCode-&gt;&gt;CloudSave: Store session record&lt;br/&gt;Data: status=waiting,&lt;br/&gt;tokenId, bridgePlayerId,&lt;br/&gt;learnerId, learnerName\n  CloudSave--&gt;&gt;CloudCode: Session saved\n  CloudCode--&gt;&gt;Bridge: tokenId, bridgePlayerId, status=waiting\n\n  Bridge--&gt;&gt;Learner: Show QR code and manual join code&lt;br/&gt;Data: { tokenId, bridgePlayerId }\n\n  Learner-&gt;&gt;Quest: Scan QR code / enter join code\n\n  Quest-&gt;&gt;UnityAuth: Unity Services sign-in&lt;br/&gt;Protocol: Unity SDK over HTTPS&lt;br/&gt;Auth: anonymous Quest player\n  UnityAuth--&gt;&gt;Quest: questPlayerId / auth context\n\n  Quest-&gt;&gt;CloudCode: StartSession&lt;br/&gt;Protocol: Unity SDK / HTTPS&lt;br/&gt;Data: tokenId, bridgePlayerId,&lt;br/&gt;questPlayerId context\n\n  CloudCode-&gt;&gt;CloudSave: Read session by tokenId + bridgePlayerId\n  CloudSave--&gt;&gt;CloudCode: Existing session\n  CloudCode-&gt;&gt;CloudSave: Update session&lt;br/&gt;Data: status=started,&lt;br/&gt;questPlayerId, startedAt\n  CloudCode--&gt;&gt;Quest: Session started\n\n  loop During VR activity\n    Bridge-&gt;&gt;CloudCode: SessionStatus poll every 3 seconds&lt;br/&gt;Protocol: HTTPS REST POST&lt;br/&gt;Data: tokenId, bridgePlayerId\n    CloudCode-&gt;&gt;CloudSave: Read session state\n    CloudSave--&gt;&gt;CloudCode: status, score, passed, customData\n    CloudCode--&gt;&gt;Bridge: status=waiting / started / completed\n  end\n\n  Quest-&gt;&gt;CloudCode: CompleteSession&lt;br/&gt;Protocol: Unity SDK / HTTPS&lt;br/&gt;Data: tokenId, bridgePlayerId,&lt;br/&gt;score, passed, customData\n\n  CloudCode-&gt;&gt;CloudSave: Validate questPlayerId\n  CloudCode-&gt;&gt;CloudSave: Update session&lt;br/&gt;Data: status=completed,&lt;br/&gt;score, passed, customData,&lt;br/&gt;completedAt\n  CloudCode--&gt;&gt;Quest: Completion saved\n\n  Bridge-&gt;&gt;CloudCode: SessionStatus poll\n  CloudCode-&gt;&gt;CloudSave: Read completed session\n  CloudSave--&gt;&gt;CloudCode: completed result\n  CloudCode--&gt;&gt;Bridge: status=completed,&lt;br/&gt;score, passed, customData\n\n  Bridge-&gt;&gt;SCORM: reportCompletion(result)\n  SCORM-&gt;&gt;LMS: SetValue(\&quot;cmi.score.raw\&quot;, score)\n  SCORM-&gt;&gt;LMS: SetValue(\&quot;cmi.score.scaled\&quot;, score / 100)\n  SCORM-&gt;&gt;LMS: SetValue(\&quot;cmi.completion_status\&quot;, \&quot;completed\&quot;)\n  SCORM-&gt;&gt;LMS: SetValue(\&quot;cmi.success_status\&quot;, passed / failed)\n  SCORM-&gt;&gt;LMS: SetValue(\&quot;cmi.session_time\&quot;, duration)\n  SCORM-&gt;&gt;LMS: SetValue(\&quot;cmi.suspend_data\&quot;, customData)\n\n  SCORM-&gt;&gt;LMS: Commit(\&quot;\&quot;)\n  SCORM-&gt;&gt;LMS: Terminate(\&quot;\&quot;)\n\n  LMS--&gt;&gt;Learner: Training marked complete\n&quot;,&#xa;  &quot;config&quot;: null&#xa;}" id="hsO7AXn-VEalSpvBAPNU-53">
+          <mxCell connectable="0" parent="1" style="group;transparentBounds=1;editIcon=1;lockedGroup=0;groupPadding=20;" vertex="1">
+            <mxGeometry as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Learner" mermaidId="n:Learner" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);participant=seqActorStick;verticalAlign=bottom;align=center;spacingBottom=4;size=90;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Learner" id="hsO7AXn-VEalSpvBAPNU-54">
+          <mxCell parent="hsO7AXn-VEalSpvBAPNU-53" style="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);participant=seqActorStick;verticalAlign=bottom;align=center;spacingBottom=4;size=90;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="2862" width="150" x="810" y="40" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="hsO7AXn-VEalSpvBAPNU-55" parent="hsO7AXn-VEalSpvBAPNU-53" style="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);size=90;participant=seqActorStick;verticalAlign=bottom;align=center;spacingBottom=4;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" value="Learner" vertex="1">
+          <mxGeometry height="90" width="150" x="810" y="2902" as="geometry" />
+        </mxCell>
+        <UserObject label="LMS / SCORM Cloud" mermaidId="n:LMS" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);size=65;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="LMS / SCORM Cloud" id="hsO7AXn-VEalSpvBAPNU-56">
+          <mxCell parent="hsO7AXn-VEalSpvBAPNU-53" style="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);size=65;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="2862" width="150" x="1047" y="40" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="hsO7AXn-VEalSpvBAPNU-57" parent="hsO7AXn-VEalSpvBAPNU-53" style="html=1;rounded=1;absoluteArcSize=1;arcSize=6;verticalAlign=middle;align=center;strokeWidth=2;whiteSpace=wrap;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" value="LMS / SCORM Cloud" vertex="1">
+          <mxGeometry height="65" width="150" x="1047" y="2902" as="geometry" />
+        </mxCell>
+        <UserObject label="SCORM Bridge Page&#xa;bridge.html" mermaidId="n:Bridge" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);size=65;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="SCORM Bridge Page&#xa;bridge.html" id="hsO7AXn-VEalSpvBAPNU-58">
+          <mxCell parent="hsO7AXn-VEalSpvBAPNU-53" style="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);size=65;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="2862" width="150" x="1360" y="40" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="hsO7AXn-VEalSpvBAPNU-59" parent="hsO7AXn-VEalSpvBAPNU-53" style="html=1;rounded=1;absoluteArcSize=1;arcSize=6;verticalAlign=middle;align=center;strokeWidth=2;whiteSpace=wrap;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" value="SCORM Bridge Page&#xa;bridge.html" vertex="1">
+          <mxGeometry height="65" width="150" x="1360" y="2902" as="geometry" />
+        </mxCell>
+        <UserObject label="SCORM API&#xa;scorm.js" mermaidId="n:SCORM" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);size=65;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="SCORM API&#xa;scorm.js" id="hsO7AXn-VEalSpvBAPNU-60">
+          <mxCell parent="hsO7AXn-VEalSpvBAPNU-53" style="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);size=65;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="2862" width="150" x="1628" y="40" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="hsO7AXn-VEalSpvBAPNU-61" parent="hsO7AXn-VEalSpvBAPNU-53" style="html=1;rounded=1;absoluteArcSize=1;arcSize=6;verticalAlign=middle;align=center;strokeWidth=2;whiteSpace=wrap;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" value="SCORM API&#xa;scorm.js" vertex="1">
+          <mxGeometry height="65" width="150" x="1628" y="2902" as="geometry" />
+        </mxCell>
+        <UserObject label="Unity Auth API" mermaidId="n:UnityAuth" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);size=65;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Unity Auth API" id="hsO7AXn-VEalSpvBAPNU-62">
+          <mxCell parent="hsO7AXn-VEalSpvBAPNU-53" style="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);size=65;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="2862" width="150" x="1828" y="40" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="hsO7AXn-VEalSpvBAPNU-63" parent="hsO7AXn-VEalSpvBAPNU-53" style="html=1;rounded=1;absoluteArcSize=1;arcSize=6;verticalAlign=middle;align=center;strokeWidth=2;whiteSpace=wrap;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" value="Unity Auth API" vertex="1">
+          <mxGeometry height="65" width="150" x="1828" y="2902" as="geometry" />
+        </mxCell>
+        <UserObject label="Unity Cloud Code" mermaidId="n:CloudCode" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);size=65;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Unity Cloud Code" id="hsO7AXn-VEalSpvBAPNU-64">
+          <mxCell parent="hsO7AXn-VEalSpvBAPNU-53" style="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);size=65;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="2862" width="150" x="2028" y="40" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="hsO7AXn-VEalSpvBAPNU-65" parent="hsO7AXn-VEalSpvBAPNU-53" style="html=1;rounded=1;absoluteArcSize=1;arcSize=6;verticalAlign=middle;align=center;strokeWidth=2;whiteSpace=wrap;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" value="Unity Cloud Code" vertex="1">
+          <mxGeometry height="65" width="150" x="2028" y="2902" as="geometry" />
+        </mxCell>
+        <UserObject label="Unity Cloud Save" mermaidId="n:CloudSave" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);size=65;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Unity Cloud Save" id="hsO7AXn-VEalSpvBAPNU-66">
+          <mxCell parent="hsO7AXn-VEalSpvBAPNU-53" style="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);size=65;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="2862" width="150" x="2370" y="40" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="hsO7AXn-VEalSpvBAPNU-67" parent="hsO7AXn-VEalSpvBAPNU-53" style="html=1;rounded=1;absoluteArcSize=1;arcSize=6;verticalAlign=middle;align=center;strokeWidth=2;whiteSpace=wrap;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" value="Unity Cloud Save" vertex="1">
+          <mxGeometry height="65" width="150" x="2370" y="2902" as="geometry" />
+        </mxCell>
+        <UserObject label="Meta Quest App" mermaidId="n:Quest" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);size=65;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Meta Quest App" id="hsO7AXn-VEalSpvBAPNU-68">
+          <mxCell parent="hsO7AXn-VEalSpvBAPNU-53" style="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);size=65;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="2862" width="150" x="2570" y="40" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="hsO7AXn-VEalSpvBAPNU-69" parent="hsO7AXn-VEalSpvBAPNU-53" style="html=1;rounded=1;absoluteArcSize=1;arcSize=6;verticalAlign=middle;align=center;strokeWidth=2;whiteSpace=wrap;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" value="Meta Quest App" vertex="1">
+          <mxGeometry height="65" width="150" x="2570" y="2902" as="geometry" />
+        </mxCell>
+        <UserObject label="loop" mermaidId="n:f0" mermaidBaseStyle="html=1;shape=umlFrame;dashed=1;fixDash=1;dashPattern=2 2;strokeWidth=2;pointerEvents=0;dropTarget=0;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontSize=16;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);height=20;width=50;" mermaidBaseValue="loop" id="hsO7AXn-VEalSpvBAPNU-70">
+          <mxCell parent="hsO7AXn-VEalSpvBAPNU-53" style="html=1;shape=umlFrame;dashed=1;fixDash=1;dashPattern=2 2;strokeWidth=2;pointerEvents=0;dropTarget=0;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontSize=16;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);height=20;width=50;" vertex="1">
+            <mxGeometry height="247" width="1070" x="1405" y="1724" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="hsO7AXn-VEalSpvBAPNU-71" parent="hsO7AXn-VEalSpvBAPNU-70" style="text;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=16;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);" value="[During VR activity]" vertex="1">
+          <mxGeometry height="16" width="1016" x="54" y="2" as="geometry" />
+        </mxCell>
+        <UserObject label="Open assigned VR training" mermaidId="e:Learner-&gt;LMS#0" mermaidBaseStyle="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Open assigned VR training" id="hsO7AXn-VEalSpvBAPNU-72">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1004" y="149" />
+              </Array>
+              <mxPoint x="885" y="149" as="sourcePoint" />
+              <mxPoint x="1122" y="149" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Launch SCORM package&#xa;Protocol: HTTPS&#xa;Data: bridge.html, JS, CSS, manifest" mermaidId="e:LMS-&gt;Bridge#0" mermaidBaseStyle="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Launch SCORM package&#xa;Protocol: HTTPS&#xa;Data: bridge.html, JS, CSS, manifest" id="hsO7AXn-VEalSpvBAPNU-73">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1279" y="227" />
+              </Array>
+              <mxPoint x="1122" y="227" as="sourcePoint" />
+              <mxPoint x="1435" y="227" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Initialize(&quot;&quot;)" mermaidId="e:Bridge-&gt;SCORM#0" mermaidBaseStyle="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Initialize(&quot;&quot;)" id="hsO7AXn-VEalSpvBAPNU-74">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1569" y="271" />
+              </Array>
+              <mxPoint x="1435" y="271" as="sourcePoint" />
+              <mxPoint x="1703" y="271" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Connect to SCORM runtime&#xa;Protocol: SCORM 2004 JS API" mermaidId="e:SCORM-&gt;LMS#0" mermaidBaseStyle="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Connect to SCORM runtime&#xa;Protocol: SCORM 2004 JS API" id="hsO7AXn-VEalSpvBAPNU-75">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1413" y="332" />
+              </Array>
+              <mxPoint x="1703" y="332" as="sourcePoint" />
+              <mxPoint x="1122" y="332" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="GetValue(&quot;cmi.learner_id&quot;)&#xa;GetValue(&quot;cmi.learner_name&quot;)" mermaidId="e:Bridge-&gt;SCORM#1" mermaidBaseStyle="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="GetValue(&quot;cmi.learner_id&quot;)&#xa;GetValue(&quot;cmi.learner_name&quot;)" id="hsO7AXn-VEalSpvBAPNU-76">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1569" y="393" />
+              </Array>
+              <mxPoint x="1435" y="393" as="sourcePoint" />
+              <mxPoint x="1703" y="393" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="learnerId, learnerName" mermaidId="e:SCORM-&gt;Bridge#0" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=2 2;endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="learnerId, learnerName" id="hsO7AXn-VEalSpvBAPNU-77">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="dashed=1;fixDash=1;dashPattern=2 2;endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1569" y="437" />
+              </Array>
+              <mxPoint x="1703" y="437" as="sourcePoint" />
+              <mxPoint x="1435" y="437" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Set incomplete state" mermaidId="e:Bridge-&gt;SCORM#2" mermaidBaseStyle="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Set incomplete state" id="hsO7AXn-VEalSpvBAPNU-78">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1569" y="481" />
+              </Array>
+              <mxPoint x="1435" y="481" as="sourcePoint" />
+              <mxPoint x="1703" y="481" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="SetValue completion_status=incomplete&#xa;success_status=unknown&#xa;Commit(&quot;&quot;)" mermaidId="e:SCORM-&gt;LMS#1" mermaidBaseStyle="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="SetValue completion_status=incomplete&#xa;success_status=unknown&#xa;Commit(&quot;&quot;)" id="hsO7AXn-VEalSpvBAPNU-79">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1413" y="559" />
+              </Array>
+              <mxPoint x="1703" y="559" as="sourcePoint" />
+              <mxPoint x="1122" y="559" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Token exchange&#xa;Protocol: HTTPS REST POST&#xa;Auth: Basic credential&#xa;Data: projectId, environmentId" mermaidId="e:Bridge-&gt;UnityAuth#0" mermaidBaseStyle="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Token exchange&#xa;Protocol: HTTPS REST POST&#xa;Auth: Basic credential&#xa;Data: projectId, environmentId" id="hsO7AXn-VEalSpvBAPNU-80">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1669" y="654" />
+              </Array>
+              <mxPoint x="1435" y="654" as="sourcePoint" />
+              <mxPoint x="1903" y="654" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="accessToken" mermaidId="e:UnityAuth-&gt;Bridge#0" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=2 2;endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="accessToken" id="hsO7AXn-VEalSpvBAPNU-81">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="dashed=1;fixDash=1;dashPattern=2 2;endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1669" y="698" />
+              </Array>
+              <mxPoint x="1903" y="698" as="sourcePoint" />
+              <mxPoint x="1435" y="698" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="" mermaidId="e:Bridge-&gt;Bridge#0" mermaidBaseStyle="edgeStyle=none;curved=1;endArrow=block;verticalAlign=bottom;align=center;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="" id="hsO7AXn-VEalSpvBAPNU-82">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="edgeStyle=none;curved=1;endArrow=block;verticalAlign=bottom;align=center;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;rounded=0;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1470" y="823" />
+                <mxPoint x="1474" y="835" />
+                <mxPoint x="1470" y="847" />
+              </Array>
+              <mxPoint x="1435" y="823" as="sourcePoint" />
+              <mxPoint x="1435" y="847" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <mxCell id="hsO7AXn-VEalSpvBAPNU-83" parent="hsO7AXn-VEalSpvBAPNU-53" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;fontColor=light-dark(#333333,#cccccc);" value="Generate sharedBridgeToken&#xa;Data: tokenId / bridgePlayerId" vertex="1">
+          <mxGeometry height="18" width="200" x="1335" y="799" as="geometry" />
+        </mxCell>
+        <UserObject label="CreateSession&#xa;Protocol: HTTPS REST POST&#xa;Auth: Bearer accessToken&#xa;Data: tokenId, bridgePlayerId,&#xa;learnerId, learnerName" mermaidId="e:Bridge-&gt;CloudCode#0" mermaidBaseStyle="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="CreateSession&#xa;Protocol: HTTPS REST POST&#xa;Auth: Bearer accessToken&#xa;Data: tokenId, bridgePlayerId,&#xa;learnerId, learnerName" id="hsO7AXn-VEalSpvBAPNU-84">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1769" y="965" />
+              </Array>
+              <mxPoint x="1435" y="965" as="sourcePoint" />
+              <mxPoint x="2103" y="965" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Store session record&#xa;Data: status=waiting,&#xa;tokenId, bridgePlayerId,&#xa;learnerId, learnerName" mermaidId="e:CloudCode-&gt;CloudSave#0" mermaidBaseStyle="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Store session record&#xa;Data: status=waiting,&#xa;tokenId, bridgePlayerId,&#xa;learnerId, learnerName" id="hsO7AXn-VEalSpvBAPNU-85">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="2274" y="1060" />
+              </Array>
+              <mxPoint x="2103" y="1060" as="sourcePoint" />
+              <mxPoint x="2445" y="1060" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Session saved" mermaidId="e:CloudSave-&gt;CloudCode#0" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=2 2;endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Session saved" id="hsO7AXn-VEalSpvBAPNU-86">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="dashed=1;fixDash=1;dashPattern=2 2;endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="2274" y="1104" />
+              </Array>
+              <mxPoint x="2445" y="1104" as="sourcePoint" />
+              <mxPoint x="2103" y="1104" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="tokenId, bridgePlayerId, status=waiting" mermaidId="e:CloudCode-&gt;Bridge#0" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=2 2;endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="tokenId, bridgePlayerId, status=waiting" id="hsO7AXn-VEalSpvBAPNU-87">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="dashed=1;fixDash=1;dashPattern=2 2;endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1769" y="1148" />
+              </Array>
+              <mxPoint x="2103" y="1148" as="sourcePoint" />
+              <mxPoint x="1435" y="1148" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Show QR code and manual join code&#xa;Data: { tokenId, bridgePlayerId }" mermaidId="e:Bridge-&gt;Learner#0" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=2 2;endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Show QR code and manual join code&#xa;Data: { tokenId, bridgePlayerId }" id="hsO7AXn-VEalSpvBAPNU-88">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="dashed=1;fixDash=1;dashPattern=2 2;endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1160" y="1209" />
+              </Array>
+              <mxPoint x="1435" y="1209" as="sourcePoint" />
+              <mxPoint x="885" y="1209" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Scan QR code / enter join code" mermaidId="e:Learner-&gt;Quest#0" mermaidBaseStyle="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Scan QR code / enter join code" id="hsO7AXn-VEalSpvBAPNU-89">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1765" y="1253" />
+              </Array>
+              <mxPoint x="885" y="1253" as="sourcePoint" />
+              <mxPoint x="2645" y="1253" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Unity Services sign-in&#xa;Protocol: Unity SDK over HTTPS&#xa;Auth: anonymous Quest player" mermaidId="e:Quest-&gt;UnityAuth#0" mermaidBaseStyle="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Unity Services sign-in&#xa;Protocol: Unity SDK over HTTPS&#xa;Auth: anonymous Quest player" id="hsO7AXn-VEalSpvBAPNU-90">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="2274" y="1331" />
+              </Array>
+              <mxPoint x="2645" y="1331" as="sourcePoint" />
+              <mxPoint x="1903" y="1331" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="questPlayerId / auth context" mermaidId="e:UnityAuth-&gt;Quest#0" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=2 2;endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="questPlayerId / auth context" id="hsO7AXn-VEalSpvBAPNU-91">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="dashed=1;fixDash=1;dashPattern=2 2;endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="2274" y="1375" />
+              </Array>
+              <mxPoint x="1903" y="1375" as="sourcePoint" />
+              <mxPoint x="2645" y="1375" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="StartSession&#xa;Protocol: Unity SDK / HTTPS&#xa;Data: tokenId, bridgePlayerId,&#xa;questPlayerId context" mermaidId="e:Quest-&gt;CloudCode#0" mermaidBaseStyle="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="StartSession&#xa;Protocol: Unity SDK / HTTPS&#xa;Data: tokenId, bridgePlayerId,&#xa;questPlayerId context" id="hsO7AXn-VEalSpvBAPNU-92">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="2374" y="1470" />
+              </Array>
+              <mxPoint x="2645" y="1470" as="sourcePoint" />
+              <mxPoint x="2103" y="1470" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Read session by tokenId + bridgePlayerId" mermaidId="e:CloudCode-&gt;CloudSave#1" mermaidBaseStyle="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Read session by tokenId + bridgePlayerId" id="hsO7AXn-VEalSpvBAPNU-93">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="2274" y="1514" />
+              </Array>
+              <mxPoint x="2103" y="1514" as="sourcePoint" />
+              <mxPoint x="2445" y="1514" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Existing session" mermaidId="e:CloudSave-&gt;CloudCode#1" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=2 2;endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Existing session" id="hsO7AXn-VEalSpvBAPNU-94">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="dashed=1;fixDash=1;dashPattern=2 2;endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="2274" y="1558" />
+              </Array>
+              <mxPoint x="2445" y="1558" as="sourcePoint" />
+              <mxPoint x="2103" y="1558" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Update session&#xa;Data: status=started,&#xa;questPlayerId, startedAt" mermaidId="e:CloudCode-&gt;CloudSave#2" mermaidBaseStyle="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Update session&#xa;Data: status=started,&#xa;questPlayerId, startedAt" id="hsO7AXn-VEalSpvBAPNU-95">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="2274" y="1636" />
+              </Array>
+              <mxPoint x="2103" y="1636" as="sourcePoint" />
+              <mxPoint x="2445" y="1636" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Session started" mermaidId="e:CloudCode-&gt;Quest#0" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=2 2;endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Session started" id="hsO7AXn-VEalSpvBAPNU-96">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="dashed=1;fixDash=1;dashPattern=2 2;endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="2374" y="1680" />
+              </Array>
+              <mxPoint x="2103" y="1680" as="sourcePoint" />
+              <mxPoint x="2645" y="1680" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="SessionStatus poll every 3 seconds&#xa;Protocol: HTTPS REST POST&#xa;Data: tokenId, bridgePlayerId" mermaidId="e:Bridge-&gt;CloudCode#1" mermaidBaseStyle="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="SessionStatus poll every 3 seconds&#xa;Protocol: HTTPS REST POST&#xa;Data: tokenId, bridgePlayerId" id="hsO7AXn-VEalSpvBAPNU-97">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1769" y="1799" />
+              </Array>
+              <mxPoint x="1435" y="1799" as="sourcePoint" />
+              <mxPoint x="2103" y="1799" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Read session state" mermaidId="e:CloudCode-&gt;CloudSave#3" mermaidBaseStyle="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Read session state" id="hsO7AXn-VEalSpvBAPNU-98">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="2274" y="1853" />
+              </Array>
+              <mxPoint x="2103" y="1853" as="sourcePoint" />
+              <mxPoint x="2445" y="1853" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="status, score, passed, customData" mermaidId="e:CloudSave-&gt;CloudCode#2" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=2 2;endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="status, score, passed, customData" id="hsO7AXn-VEalSpvBAPNU-99">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="dashed=1;fixDash=1;dashPattern=2 2;endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="2274" y="1907" />
+              </Array>
+              <mxPoint x="2445" y="1907" as="sourcePoint" />
+              <mxPoint x="2103" y="1907" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="status=waiting / started / completed" mermaidId="e:CloudCode-&gt;Bridge#1" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=2 2;endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="status=waiting / started / completed" id="hsO7AXn-VEalSpvBAPNU-100">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="dashed=1;fixDash=1;dashPattern=2 2;endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1769" y="1961" />
+              </Array>
+              <mxPoint x="2103" y="1961" as="sourcePoint" />
+              <mxPoint x="1435" y="1961" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="CompleteSession&#xa;Protocol: Unity SDK / HTTPS&#xa;Data: tokenId, bridgePlayerId,&#xa;score, passed, customData" mermaidId="e:Quest-&gt;CloudCode#1" mermaidBaseStyle="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="CompleteSession&#xa;Protocol: Unity SDK / HTTPS&#xa;Data: tokenId, bridgePlayerId,&#xa;score, passed, customData" id="hsO7AXn-VEalSpvBAPNU-101">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="2374" y="2066" />
+              </Array>
+              <mxPoint x="2645" y="2066" as="sourcePoint" />
+              <mxPoint x="2103" y="2066" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Validate questPlayerId" mermaidId="e:CloudCode-&gt;CloudSave#4" mermaidBaseStyle="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Validate questPlayerId" id="hsO7AXn-VEalSpvBAPNU-102">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="2274" y="2110" />
+              </Array>
+              <mxPoint x="2103" y="2110" as="sourcePoint" />
+              <mxPoint x="2445" y="2110" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Update session&#xa;Data: status=completed,&#xa;score, passed, customData,&#xa;completedAt" mermaidId="e:CloudCode-&gt;CloudSave#5" mermaidBaseStyle="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Update session&#xa;Data: status=completed,&#xa;score, passed, customData,&#xa;completedAt" id="hsO7AXn-VEalSpvBAPNU-103">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="2274" y="2205" />
+              </Array>
+              <mxPoint x="2103" y="2205" as="sourcePoint" />
+              <mxPoint x="2445" y="2205" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Completion saved" mermaidId="e:CloudCode-&gt;Quest#1" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=2 2;endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Completion saved" id="hsO7AXn-VEalSpvBAPNU-104">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="dashed=1;fixDash=1;dashPattern=2 2;endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="2374" y="2249" />
+              </Array>
+              <mxPoint x="2103" y="2249" as="sourcePoint" />
+              <mxPoint x="2645" y="2249" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="SessionStatus poll" mermaidId="e:Bridge-&gt;CloudCode#2" mermaidBaseStyle="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="SessionStatus poll" id="hsO7AXn-VEalSpvBAPNU-105">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1769" y="2293" />
+              </Array>
+              <mxPoint x="1435" y="2293" as="sourcePoint" />
+              <mxPoint x="2103" y="2293" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Read completed session" mermaidId="e:CloudCode-&gt;CloudSave#6" mermaidBaseStyle="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Read completed session" id="hsO7AXn-VEalSpvBAPNU-106">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="2274" y="2337" />
+              </Array>
+              <mxPoint x="2103" y="2337" as="sourcePoint" />
+              <mxPoint x="2445" y="2337" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="completed result" mermaidId="e:CloudSave-&gt;CloudCode#3" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=2 2;endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="completed result" id="hsO7AXn-VEalSpvBAPNU-107">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="dashed=1;fixDash=1;dashPattern=2 2;endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="2274" y="2381" />
+              </Array>
+              <mxPoint x="2445" y="2381" as="sourcePoint" />
+              <mxPoint x="2103" y="2381" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="status=completed,&#xa;score, passed, customData" mermaidId="e:CloudCode-&gt;Bridge#2" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=2 2;endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="status=completed,&#xa;score, passed, customData" id="hsO7AXn-VEalSpvBAPNU-108">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="dashed=1;fixDash=1;dashPattern=2 2;endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1769" y="2442" />
+              </Array>
+              <mxPoint x="2103" y="2442" as="sourcePoint" />
+              <mxPoint x="1435" y="2442" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="reportCompletion(result)" mermaidId="e:Bridge-&gt;SCORM#3" mermaidBaseStyle="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="reportCompletion(result)" id="hsO7AXn-VEalSpvBAPNU-109">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1569" y="2486" />
+              </Array>
+              <mxPoint x="1435" y="2486" as="sourcePoint" />
+              <mxPoint x="1703" y="2486" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="SetValue(&quot;cmi.score.raw&quot;, score)" mermaidId="e:SCORM-&gt;LMS#2" mermaidBaseStyle="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="SetValue(&quot;cmi.score.raw&quot;, score)" id="hsO7AXn-VEalSpvBAPNU-110">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1413" y="2530" />
+              </Array>
+              <mxPoint x="1703" y="2530" as="sourcePoint" />
+              <mxPoint x="1122" y="2530" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="SetValue(&quot;cmi.score.scaled&quot;, score / 100)" mermaidId="e:SCORM-&gt;LMS#3" mermaidBaseStyle="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="SetValue(&quot;cmi.score.scaled&quot;, score / 100)" id="hsO7AXn-VEalSpvBAPNU-111">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1413" y="2574" />
+              </Array>
+              <mxPoint x="1703" y="2574" as="sourcePoint" />
+              <mxPoint x="1122" y="2574" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="SetValue(&quot;cmi.completion_status&quot;, &quot;completed&quot;)" mermaidId="e:SCORM-&gt;LMS#4" mermaidBaseStyle="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="SetValue(&quot;cmi.completion_status&quot;, &quot;completed&quot;)" id="hsO7AXn-VEalSpvBAPNU-112">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1413" y="2618" />
+              </Array>
+              <mxPoint x="1703" y="2618" as="sourcePoint" />
+              <mxPoint x="1122" y="2618" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="SetValue(&quot;cmi.success_status&quot;, passed / failed)" mermaidId="e:SCORM-&gt;LMS#5" mermaidBaseStyle="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="SetValue(&quot;cmi.success_status&quot;, passed / failed)" id="hsO7AXn-VEalSpvBAPNU-113">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1413" y="2662" />
+              </Array>
+              <mxPoint x="1703" y="2662" as="sourcePoint" />
+              <mxPoint x="1122" y="2662" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="SetValue(&quot;cmi.session_time&quot;, duration)" mermaidId="e:SCORM-&gt;LMS#6" mermaidBaseStyle="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="SetValue(&quot;cmi.session_time&quot;, duration)" id="hsO7AXn-VEalSpvBAPNU-114">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1413" y="2706" />
+              </Array>
+              <mxPoint x="1703" y="2706" as="sourcePoint" />
+              <mxPoint x="1122" y="2706" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="SetValue(&quot;cmi.suspend_data&quot;, customData)" mermaidId="e:SCORM-&gt;LMS#7" mermaidBaseStyle="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="SetValue(&quot;cmi.suspend_data&quot;, customData)" id="hsO7AXn-VEalSpvBAPNU-115">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1413" y="2750" />
+              </Array>
+              <mxPoint x="1703" y="2750" as="sourcePoint" />
+              <mxPoint x="1122" y="2750" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Commit(&quot;&quot;)" mermaidId="e:SCORM-&gt;LMS#8" mermaidBaseStyle="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Commit(&quot;&quot;)" id="hsO7AXn-VEalSpvBAPNU-116">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1413" y="2794" />
+              </Array>
+              <mxPoint x="1703" y="2794" as="sourcePoint" />
+              <mxPoint x="1122" y="2794" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Terminate(&quot;&quot;)" mermaidId="e:SCORM-&gt;LMS#9" mermaidBaseStyle="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Terminate(&quot;&quot;)" id="hsO7AXn-VEalSpvBAPNU-117">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1413" y="2838" />
+              </Array>
+              <mxPoint x="1703" y="2838" as="sourcePoint" />
+              <mxPoint x="1122" y="2838" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Training marked complete" mermaidId="e:LMS-&gt;Learner#0" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=2 2;endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Training marked complete" id="hsO7AXn-VEalSpvBAPNU-118">
+          <mxCell edge="1" parent="hsO7AXn-VEalSpvBAPNU-53" style="dashed=1;fixDash=1;dashPattern=2 2;endArrow=block;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1004" y="2882" />
+              </Array>
+              <mxPoint x="1122" y="2882" as="sourcePoint" />
+              <mxPoint x="885" y="2882" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
