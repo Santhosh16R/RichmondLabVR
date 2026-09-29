@@ -1,0 +1,68 @@
+flowchart LR
+
+    %% =========================
+    %% USER ACCESS
+    %% =========================
+    U[End Users<br/>Browser] -->|1. Open https://yourapp.com| DNS[Azure DNS<br/>Custom Domain]
+
+    DNS -->|2. DNS Resolution| FD[Azure Front Door<br/>CDN + HTTPS + WAF]
+
+    FD -->|3. Deliver Unity WebGL Content| STORAGE[Azure Storage Account<br/>Static Website Hosting]
+
+    %% =========================
+    %% UNITY WEBGL HOSTING
+    %% =========================
+    subgraph HOSTING["Unity WebGL Hosting"]
+        STORAGE
+        ASSETS[Azure Blob Storage<br/>Optional Additional Assets]
+    end
+
+    STORAGE -->|Load models / textures / media| ASSETS
+
+    %% =========================
+    %% BACKEND SERVICES
+    %% =========================
+    STORAGE -->|4. REST API Calls| FUNC[Azure Functions<br/>Backend APIs / Game Logic]
+
+    FUNC --> COSMOS[Azure Cosmos DB<br/>User Data / Scores / Config]
+
+    STORAGE --> ENTRA[Microsoft Entra ID<br/>Authentication]
+
+    STORAGE --> ACS[Azure Communication Services<br/>Chat / Signaling<br/>Optional]
+
+    %% =========================
+    %% CI/CD PIPELINE
+    %% =========================
+    subgraph CICD["Unity WebGL Build & CI/CD"]
+        UNITY[Unity Project] --> DEVOPS[Azure DevOps<br/>or GitHub Actions]
+        DEVOPS --> BUILD[Build Unity WebGL]
+        BUILD --> DEPLOY[Deploy Build]
+    end
+
+    DEPLOY -->|5. Continuous Deployment| STORAGE
+
+    %% =========================
+    %% MONITORING
+    %% =========================
+    subgraph MONITORING["Monitoring & Analytics"]
+        APPINSIGHTS[Application Insights]
+        MONITOR[Azure Monitor]
+        LOGS[Log Analytics]
+    end
+
+    FUNC --> APPINSIGHTS
+    STORAGE --> MONITOR
+    FUNC --> LOGS
+
+    %% =========================
+    %% STYLING
+    %% =========================
+    classDef azure fill:#eaf4ff,stroke:#0078D4,stroke-width:2px,color:#111;
+    classDef unity fill:#f7f7f7,stroke:#222,stroke-width:2px,color:#111;
+    classDef backend fill:#eef8ff,stroke:#005EA6,stroke-width:2px,color:#111;
+    classDef monitor fill:#f7efff,stroke:#7F3FBF,stroke-width:2px,color:#111;
+
+    class DNS,FD,STORAGE,ASSETS,DEVOPS,DEPLOY azure;
+    class UNITY,BUILD unity;
+    class FUNC,COSMOS,ENTRA,ACS backend;
+    class APPINSIGHTS,MONITOR,LOGS monitor;
